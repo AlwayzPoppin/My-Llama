@@ -1,0 +1,5 @@
+{
+  "name": "My Llama: AI Model Training Studio",
+  "description": "A comprehensive interface for orchestrating, simulating, and optimizing training workflows for Ollama-compatible LLMs. Features synthetic dataset generation via Gemini, hyperparameter tuning, and live training visualizations.",
+  "requestFramePermissions": []
+}
