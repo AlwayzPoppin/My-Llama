@@ -6,9 +6,10 @@ import { TrainingConfig, TrainingPair, ForgePlan } from '../types';
 interface AutoForgeProps {
   onPlanReady: (config: TrainingConfig, lessons: TrainingPair[]) => void;
   startTraining: () => void;
+  availableModels: string[];
 }
 
-const AutoForge: React.FC<AutoForgeProps> = ({ onPlanReady, startTraining }) => {
+const AutoForge: React.FC<AutoForgeProps> = ({ onPlanReady, startTraining, availableModels }) => {
   const [mission, setMission] = useState('');
   const [isForging, setIsForging] = useState(false);
   const [step, setStep] = useState(0);
@@ -34,7 +35,7 @@ const AutoForge: React.FC<AutoForgeProps> = ({ onPlanReady, startTraining }) => 
     }, 1000);
 
     try {
-      const generatedPlan = await getAutoForgePlan(mission);
+      const generatedPlan = await getAutoForgePlan(mission, availableModels);
       setPlan(generatedPlan);
       onPlanReady(generatedPlan.config, generatedPlan.lessons);
       setTimeout(() => { clearInterval(stepInterval); setStep(forgeSteps.length); }, 1500);
@@ -62,11 +63,10 @@ const AutoForge: React.FC<AutoForgeProps> = ({ onPlanReady, startTraining }) => 
               <button
                 key={p.id}
                 onClick={() => setMission(p.text)}
-                className={`px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all flex items-center space-x-3 ${
-                  mission === p.text 
-                  ? 'bg-indigo-600 border-indigo-500 text-white shadow-xl shadow-indigo-600/20 scale-105' 
-                  : 'bg-white/5 border-white/10 text-gray-500 hover:border-white/20 hover:text-gray-300'
-                }`}
+                className={`px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all flex items-center space-x-3 ${mission === p.text
+                    ? 'bg-indigo-600 border-indigo-500 text-white shadow-xl shadow-indigo-600/20 scale-105'
+                    : 'bg-white/5 border-white/10 text-gray-500 hover:border-white/20 hover:text-gray-300'
+                  }`}
               >
                 <span>{p.icon}</span>
                 <span>{p.label}</span>
@@ -87,13 +87,12 @@ const AutoForge: React.FC<AutoForgeProps> = ({ onPlanReady, startTraining }) => 
           <button
             onClick={handleForge}
             disabled={!mission}
-            className={`px-16 py-6 rounded-3xl font-black text-xl tracking-[0.2em] uppercase transition-all duration-500 transform active:scale-95 flex items-center space-x-6 mx-auto ${
-              mission 
-                ? 'bg-white text-black shadow-2xl shadow-white/10 hover:scale-105' 
+            className={`px-16 py-6 rounded-3xl font-black text-xl tracking-[0.2em] uppercase transition-all duration-500 transform active:scale-95 flex items-center space-x-6 mx-auto ${mission
+                ? 'bg-white text-black shadow-2xl shadow-white/10 hover:scale-105'
                 : 'bg-white/5 text-gray-700 cursor-not-allowed border border-white/5'
-            }`}
+              }`}
           >
-            <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
             <span>Ignite Forge</span>
           </button>
         </div>
@@ -105,7 +104,7 @@ const AutoForge: React.FC<AutoForgeProps> = ({ onPlanReady, startTraining }) => 
                 <div className="w-48 h-48 border-[6px] border-white/5 border-t-indigo-500 rounded-full animate-spin duration-[2s]" />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-24 h-24 bg-indigo-500/10 rounded-full animate-pulse flex items-center justify-center">
-                     <svg className="w-10 h-10 text-indigo-400" fill="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    <svg className="w-10 h-10 text-indigo-400" fill="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                   </div>
                 </div>
               </div>
@@ -117,9 +116,9 @@ const AutoForge: React.FC<AutoForgeProps> = ({ onPlanReady, startTraining }) => 
                   <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce [animation-delay:0.4s]" />
                 </div>
               </div>
-              
+
               <div className="w-full max-w-md bg-white/5 h-2 rounded-full overflow-hidden border border-white/5">
-                <div 
+                <div
                   className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-1000 ease-out"
                   style={{ width: `${(step / forgeSteps.length) * 100}%` }}
                 />
@@ -138,8 +137,8 @@ const AutoForge: React.FC<AutoForgeProps> = ({ onPlanReady, startTraining }) => 
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
-                   <button onClick={() => setIsForging(false)} className="px-6 py-3 text-gray-500 hover:text-white transition-colors text-xs font-black uppercase tracking-widest">Recast</button>
-                   <button onClick={startTraining} className="px-10 py-4 bg-white text-black rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl transition-all hover:scale-105 active:scale-95">Initiate Tempering</button>
+                  <button onClick={() => setIsForging(false)} className="px-6 py-3 text-gray-500 hover:text-white transition-colors text-xs font-black uppercase tracking-widest">Recast</button>
+                  <button onClick={startTraining} className="px-10 py-4 bg-white text-black rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl transition-all hover:scale-105 active:scale-95">Initiate Tempering</button>
                 </div>
               </div>
 
@@ -154,7 +153,7 @@ const AutoForge: React.FC<AutoForgeProps> = ({ onPlanReady, startTraining }) => 
                     <div className="space-y-2">
                       {plan?.protocol.map((step, i) => (
                         <div key={i} className="flex items-center space-x-4 p-4 bg-white/[0.02] border border-white/5 rounded-2xl">
-                          <span className="text-[10px] font-mono text-gray-600">{(i+1).toString().padStart(2, '0')}</span>
+                          <span className="text-[10px] font-mono text-gray-600">{(i + 1).toString().padStart(2, '0')}</span>
                           <span className="text-xs text-gray-400 font-medium">{step}</span>
                         </div>
                       ))}

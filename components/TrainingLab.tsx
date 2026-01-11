@@ -48,7 +48,7 @@ const TrainingLab: React.FC<TrainingLabProps> = ({ config, dataset, status, setS
         const loss = Math.max(0.01, 2.5 * Math.pow(0.97, step));
         const accuracy = Math.min(0.99, 0.4 + (0.6 * (1 - Math.pow(0.95, step))));
         setMetrics(prev => [...prev, { step, loss, accuracy }]);
-        if (step % 5 === 0) addLog(`Cycle ${Math.floor(step/10) + 1} | Convergence: ${(accuracy*100).toFixed(1)}% | Error: ${loss.toFixed(4)}`);
+        if (step % 5 === 0) addLog(`Cycle ${Math.floor(step / 10) + 1} | Convergence: ${(accuracy * 100).toFixed(1)}% | Error: ${loss.toFixed(4)}`);
         if (step >= totalSteps) {
           clearInterval(interval);
           setStatus(TrainingStatus.COMPLETED);
@@ -96,7 +96,7 @@ const TrainingLab: React.FC<TrainingLabProps> = ({ config, dataset, status, setS
               </div>
             </div>
             <div className="flex-1 min-h-0">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <LineChart data={metrics}>
                   <CartesianGrid strokeDasharray="4 4" stroke="rgba(255,255,255,0.05)" vertical={false} />
                   <XAxis dataKey="step" stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} />

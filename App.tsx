@@ -13,6 +13,7 @@ import HelpOverlay from './components/HelpOverlay';
 import MediaLab from './components/MediaLab';
 import { TrainingConfig, TrainingPair, TrainingStatus, TrainingLog, MetricPoint, ModelVersion, PreferencePair } from './types';
 import { setGeminiApiKey } from './services/geminiService';
+import { fetchInstalledModels, checkOllamaStatus } from './services/ollamaService';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('autoforge');
@@ -40,6 +41,32 @@ const App: React.FC = () => {
   const [trainingMetrics, setTrainingMetrics] = useState<MetricPoint[]>([]);
   const [trainingProgress, setTrainingProgress] = useState(0);
   const [modelVersions, setModelVersions] = useState<ModelVersion[]>([]);
+  const [localModels, setLocalModels] = useState<string[]>([]);
+  const [ollamaConnected, setOllamaConnected] = useState(false);
+  const [isSyncingModels, setIsSyncingModels] = useState(false);
+
+  const syncOllama = async () => {
+    setIsSyncingModels(true);
+    try {
+      const isUp = await checkOllamaStatus();
+      setOllamaConnected(isUp);
+      if (isUp) {
+        const models = await fetchInstalledModels();
+        setLocalModels(models);
+        if (models.length > 0 && !models.includes(config.baseModel)) {
+          setConfig(prev => ({ ...prev, baseModel: models[0] }));
+        }
+      }
+    } catch (e) {
+      console.warn("Ollama sync failed", e);
+    } finally {
+      setIsSyncingModels(false);
+    }
+  };
+
+  useEffect(() => {
+    syncOllama();
+  }, []);
 
   useEffect(() => {
     const checkKey = async () => {
@@ -104,16 +131,16 @@ const App: React.FC = () => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'autoforge': return <AutoForge onPlanReady={handleAutoForgePlan} startTraining={startAutomatedTraining} />;
+      case 'autoforge': return <AutoForge onPlanReady={handleAutoForgePlan} startTraining={startAutomatedTraining} availableModels={localModels} />;
       case 'dataset': return <DatasetManager dataset={dataset} setDataset={setDataset} config={config} />;
       case 'medialab': return <MediaLab setDataset={setDataset} />;
       case 'alignment': return <AlignmentLab preferences={preferences} setPreferences={setPreferences} config={config} />;
       case 'toolforge': return <ToolForge config={config} setConfig={setConfig} setDataset={setDataset} />;
-      case 'config': return <ConfigPanel config={config} setConfig={setConfig} />;
+      case 'config': return <ConfigPanel config={config} setConfig={setConfig} availableModels={localModels} ollamaConnected={ollamaConnected} onRefreshModels={syncOllama} isRefreshing={isSyncingModels} />;
       case 'training': return <TrainingLab config={config} dataset={dataset} status={trainingStatus} setStatus={setTrainingStatus} logs={trainingLogs} setLogs={setTrainingLogs} metrics={trainingMetrics} setMetrics={setTrainingMetrics} progress={trainingProgress} setProgress={setTrainingProgress} versions={modelVersions} setVersions={setModelVersions} onLoadVersion={loadVersion} />;
       case 'testbench': return <TestBench config={config} dataset={dataset} status={trainingStatus} />;
       case 'export': return <ExportPanel config={config} />;
-      default: return <AutoForge onPlanReady={handleAutoForgePlan} startTraining={startAutomatedTraining} />;
+      default: return <AutoForge onPlanReady={handleAutoForgePlan} startTraining={startAutomatedTraining} availableModels={localModels} />;
     }
   };
 

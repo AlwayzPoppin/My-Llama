@@ -5,38 +5,15 @@ import { fetchInstalledModels, checkOllamaStatus } from '../services/ollamaServi
 interface ConfigPanelProps {
   config: TrainingConfig;
   setConfig: React.Dispatch<React.SetStateAction<TrainingConfig>>;
+  availableModels: string[];
+  ollamaConnected: boolean;
+  onRefreshModels: () => void;
+  isRefreshing: boolean;
 }
 
-const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, setConfig }) => {
+const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, setConfig, availableModels, ollamaConnected, onRefreshModels, isRefreshing }) => {
   const [toolName, setToolName] = useState('');
   const [toolDesc, setToolDesc] = useState('');
-  const [localModels, setLocalModels] = useState<string[]>([]);
-  const [ollamaConnected, setOllamaConnected] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  useEffect(() => {
-    refreshModels();
-  }, []);
-
-  const refreshModels = async () => {
-    setIsRefreshing(true);
-    try {
-      const isUp = await checkOllamaStatus();
-      setOllamaConnected(isUp);
-      if (isUp) {
-        const models = await fetchInstalledModels();
-        setLocalModels(models);
-        // Default to first model if current is not in list
-        if (models.length > 0 && !models.includes(config.baseModel)) {
-          setConfig(prev => ({ ...prev, baseModel: models[0] }));
-        }
-      }
-    } catch (e) {
-      console.warn("Could not sync with local Ollama", e);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
@@ -112,7 +89,7 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, setConfig }) => {
                     {ollamaConnected ? 'Ollama Online' : 'Ollama Offline'}
                   </span>
                   <button
-                    onClick={refreshModels}
+                    onClick={onRefreshModels}
                     disabled={isRefreshing}
                     className="p-1 hover:bg-white/5 rounded-md transition-colors text-gray-400"
                     title="Sync Local Models"
@@ -127,8 +104,8 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, setConfig }) => {
                 onChange={handleChange}
                 className="w-full bg-gray-950 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500"
               >
-                {localModels.length > 0 ? (
-                  localModels.map(m => (
+                {availableModels.length > 0 ? (
+                  availableModels.map(m => (
                     <option key={m} value={m}>{m}</option>
                   ))
                 ) : (

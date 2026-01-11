@@ -102,7 +102,7 @@ export const generateSyntheticData = async (
 export const autoRankPreference = async (prompt: string, optionA: string, optionB: string): Promise<{ winner: 'A' | 'B', critique: string }> => {
   const ai = getAI();
   const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-1.5-flash-latest',
     contents: `As a Master AI Critic and Senior Software Architect, evaluate these two AI outputs for the prompt: "${prompt}".
     
     CRITIQUE CRITERIA:
@@ -138,10 +138,10 @@ export const autoRankPreference = async (prompt: string, optionA: string, option
   return { winner: data.winner as 'A' | 'B', critique: data.critique };
 };
 
-export const getAutoForgePlan = async (mission: string): Promise<ForgePlan> => {
+export const getAutoForgePlan = async (mission: string, availableModels?: string[]): Promise<ForgePlan> => {
   const ai = getAI();
   const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-1.5-flash-latest',
     contents: `Act as a world-class AI Orchestrator. Mission: "${mission}".
     
     If the mission involves Voice Acting:
@@ -159,7 +159,7 @@ export const getAutoForgePlan = async (mission: string): Promise<ForgePlan> => {
     - Set the protocol to include Temporal analysis or Acoustic synthesis.
     
     General rules:
-    1. Select base model from: ${OLLAMA_MODELS.join(', ')}.
+    1. Select base model from: ${availableModels && availableModels.length > 0 ? availableModels.join(', ') : OLLAMA_MODELS.join(', ')}.
     2. Determine config (epochs, learningRate, contextLength, vision).
     3. Generate 10 lessons.
     Return as JSON.`,
